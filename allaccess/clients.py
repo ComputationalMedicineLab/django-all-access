@@ -6,6 +6,7 @@ import logging
 from django.utils.crypto import constant_time_compare, get_random_string
 from django.utils.encoding import force_text
 
+import jwt
 from requests.api import request
 from requests_oauthlib import OAuth1
 from requests.exceptions import RequestException
@@ -222,6 +223,15 @@ class OAuth2Client(BaseOAuthClient):
             params['access_token'] = token
             kwargs['params'] = params
         return super(OAuth2Client, self).request(method, url, **kwargs)
+
+    def get_profile_info(self, raw_token, profile_info_params={}):
+        try:
+            raw_token_dict = json.loads(raw_token)
+            encoded_payload = raw_token_dict['id_token']
+            decoded_payload = jwt.decode(encoded_payload, verify=False)
+            return {'id': decoded_payload['sub']}
+        except:
+            return super(OAuth2Client, self).get_profile_info(self, raw_token, profile_info_params)
 
     @property
     def session_key(self):

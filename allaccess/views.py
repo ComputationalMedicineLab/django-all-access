@@ -125,7 +125,10 @@ class OAuthCallback(OAuthClientMixin, View):
         digest = hashlib.sha1(smart_bytes(access)).digest()
         # Base 64 encode to get below 30 characters
         # Removed padding characters
-        username = force_text(base64.urlsafe_b64encode(digest)).replace('=', '')
+        if info['id']:
+            username = info['id']
+        else:
+            username = force_text(base64.urlsafe_b64encode(digest)).replace('=', '')
         User = get_user_model()
         kwargs = {
             User.USERNAME_FIELD: username,
